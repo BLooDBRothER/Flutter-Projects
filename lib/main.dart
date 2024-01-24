@@ -46,41 +46,72 @@ class MyAppState extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void removeFavorite(WordPair pair) {
+      favorites.remove(current);
+      notifyListeners();
+  }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          SafeArea(
-            child: NavigationRail(
-              extended: false,
-              destinations: [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home),
-                  label: Text('Home'),
+
+    Widget page;
+    switch(selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = FavoritePage();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  extended: constraints.maxWidth >= 1000,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (value) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.favorite),
-                  label: Text('Favorites'),
+              ),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
                 ),
-              ],
-              selectedIndex: 0,
-              onDestinationSelected: (value) {
-                print('selected: $value');
-              },
-            ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: GeneratorPage(),
-            ),
-          ),
-        ],
-      ),
+        );
+      }
     );
   }
 }
@@ -108,8 +139,8 @@ class GeneratorPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Your Awesome Name', style: titleStyle,),
-          BigCard(pair: pair),
+          Text('Your Awesome Name', style: titleStyle, textAlign: TextAlign.center,),
+          BigCard(pair: pair, showBtn: false),
           SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -136,27 +167,70 @@ class GeneratorPage extends StatelessWidget {
   }
 }
 
+class FavoritePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var favorites = appState.favorites;
+    final theme = Theme.of(context);
+
+    final titleStyle = theme.textTheme.displayMedium!.copyWith(
+      color: theme.colorScheme.onSurface,
+    );
+
+    return Center(
+      child: ListView(
+        children: [
+          Text('Your Awesome Favorite Name', style: titleStyle, textAlign: TextAlign.center,),
+          for (var favorite in favorites)
+            BigCard(pair: favorite, showBtn: true)
+        ],
+      ),
+    );
+  }
+}
+
+
 class BigCard extends StatelessWidget {
   const BigCard({
     super.key,
     required this.pair,
+    required this.showBtn
   });
 
   final WordPair pair;
+  final bool showBtn;
 
   @override
   Widget build(BuildContext context) {
+    IconData icon = Icons.delete;
+
+    var appState = context.watch<MyAppState>();
+
     final theme = Theme.of(context);
     final style = theme.textTheme.displayMedium!.copyWith(
       color: theme.colorScheme.onSecondary,
     );
 
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Text("${pair.first} ${pair.second}", style: style,),
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Card(
+          color: theme.colorScheme.primary,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text("${pair.first} ${pair.second}", style: style,),
+          ),
+        ),
+        showBtn ? ElevatedButton.icon(
+          onPressed: () {
+            appState.removeFavorite(pair);
+          }, 
+          icon: Icon(icon), 
+          label: Text("Remove"),
+        ) :
+        Container(),
+      ],
     );
   }
 }
