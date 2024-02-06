@@ -14,9 +14,8 @@ class Expenses extends StatefulWidget {
 class _Expenses extends State<Expenses> {
   final List<Expense> _expenseList = [
     Expense(title: "Petorl", amount: 200, category: Category.vehicle, date: DateTime.now()),
-    Expense(title: "Hoodie", amount: 746, category: Category.clothings, date: DateTime.now()),
-    Expense(title: "Dinner", amount: 289, category: Category.food, date: DateTime.now()),
-    Expense(title: "Leo", amount: 180, category: Category.entertainment, date: DateTime.now()),
+    Expense(title: "Diesel", amount: 200, category: Category.vehicle, date: DateTime.now()),
+    Expense(title: "Petorl", amount: 200, category: Category.vehicle, date: DateTime.now()),
   ];
   
   void _addExpense(Expense expense) {
@@ -24,6 +23,35 @@ class _Expenses extends State<Expenses> {
       _expenseList.add(expense);
     });
   }
+
+  void _removeExpense(Expense expense) {
+    final removeExpenseIndex = _expenseList.indexOf(expense);
+    setState(() {
+      _expenseList.remove(expense);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.undo, color: Colors.white,),
+            SizedBox(width: 8,),
+            Text("Undo Deleted Expense")
+          ],
+        ),
+        action: SnackBarAction(
+          label: "UNDO", 
+          onPressed: () {
+            setState(() {
+              _expenseList.insert(removeExpenseIndex, expense);
+            });
+          },
+        ),
+      )
+    );
+  }
+
+
 
   void _expenseOverlayModel () {
     showModalBottomSheet(isScrollControlled: true, context: context, builder: (ctx) => ExpenseModel(onAddExpense: _addExpense));
@@ -41,10 +69,31 @@ class _Expenses extends State<Expenses> {
           )
         ],
       ),
-      body: Column(
+      body: _expenseList.isEmpty ?
+      const NoExpense() :
+      Column(
         children: [
-          Expanded(child: ExpenseList(expenses: _expenseList)),
+          Expanded(child: ExpenseList(expenses: _expenseList, onRemoveExpense: _removeExpense,)),
         ],
+      ),
+    );
+  }
+}
+
+class NoExpense extends StatelessWidget {
+  const NoExpense({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(Icons.block),
+          Text("No Expenses")
+        ]
       ),
     );
   }
