@@ -1,3 +1,4 @@
+import 'package:expense_app/widgets/statistics/statistics.dart';
 import 'package:flutter/material.dart';
 
 import "package:expense_app/models/expense.dart";
@@ -5,18 +6,23 @@ import 'package:expense_app/widgets/expense/expense_list/expense_list.dart';
 import 'package:expense_app/widgets/expense/new_expense_model.dart';
 
 class Expenses extends StatefulWidget {
-  const Expenses({super.key});
+  const Expenses({
+    super.key,
+    required this.isDark,
+    required this.toggleThem
+  });
+
+  final bool isDark;
+  final void Function() toggleThem;
 
   @override
   State<Expenses> createState() => _Expenses();
 }
 
 class _Expenses extends State<Expenses> {
-  final List<Expense> _expenseList = [
-    Expense(title: "Petorl", amount: 200, category: Category.vehicle, date: DateTime.now()),
-    Expense(title: "Diesel", amount: 200, category: Category.vehicle, date: DateTime.now()),
-    Expense(title: "Petorl", amount: 200, category: Category.vehicle, date: DateTime.now()),
-  ];
+  int selectedScreenIndex = 0;
+
+  final List<Expense> _expenseList = [];
   
   void _addExpense(Expense expense) {
     setState(() {
@@ -34,7 +40,7 @@ class _Expenses extends State<Expenses> {
       SnackBar(
         content: const Row(
           children: [
-            Icon(Icons.undo, color: Colors.white,),
+            Icon(Icons.undo,),
             SizedBox(width: 8,),
             Text("Undo Deleted Expense")
           ],
@@ -51,10 +57,11 @@ class _Expenses extends State<Expenses> {
     );
   }
 
-
-
   void _expenseOverlayModel () {
     showModalBottomSheet(isScrollControlled: true, context: context, builder: (ctx) => ExpenseModel(onAddExpense: _addExpense));
+    setState(() {
+      selectedScreenIndex = 0;
+    });
   }
 
   @override
@@ -66,16 +73,36 @@ class _Expenses extends State<Expenses> {
           IconButton(
             onPressed: _expenseOverlayModel, 
             icon: const Icon(Icons.add)
-          )
+          ),
+          IconButton(
+            onPressed: widget.toggleThem, 
+            icon: Icon(widget.isDark ? Icons.light : Icons.dark_mode)
+          ),
         ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedScreenIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            selectedScreenIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home), label: "Home"),
+          NavigationDestination(icon: Icon(Icons.pie_chart), label: "Statistics")
+        ]
       ),
       body: _expenseList.isEmpty ?
       const NoExpense() :
-      Column(
-        children: [
-          Expanded(child: ExpenseList(expenses: _expenseList, onRemoveExpense: _removeExpense,)),
-        ],
-      ),
+      (
+        selectedScreenIndex == 0 ?
+        Column(
+          children: [
+            Expanded(child: ExpenseList(expenses: _expenseList, onRemoveExpense: _removeExpense,)),
+          ],
+        ) :
+        Statistics(expenseList: _expenseList,)
+      )
     );
   }
 }

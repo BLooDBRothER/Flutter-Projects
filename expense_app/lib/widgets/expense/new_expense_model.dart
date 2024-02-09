@@ -160,7 +160,7 @@ class _ExpenseModel extends State<ExpenseModel> {
             children: [
               ElevatedButton(onPressed: _addExpense, child: const Text("Add Expense")),
               const SizedBox(width: 10,),
-              TextButton(onPressed: () {Navigator.pop(context);}, child: const Text("Discard"))
+              OutlinedButton(onPressed: () {Navigator.pop(context);}, child: const Text("Discard"))
             ],
           )
         ],

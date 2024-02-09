@@ -32,3 +32,4 @@ class Expense {
     return dateFormatter.format(date);
   }
 }
+
