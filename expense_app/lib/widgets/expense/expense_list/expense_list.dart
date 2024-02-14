@@ -21,7 +21,6 @@ class ExpenseList extends StatelessWidget {
         itemBuilder: (ctx, index) => Dismissible(
           key: ValueKey(expenses[index]),
           background: Container(
-            // color: Colors.red,
             color: Theme.of(context).colorScheme.error,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             alignment: AlignmentDirectional.centerEnd,

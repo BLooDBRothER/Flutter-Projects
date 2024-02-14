@@ -58,7 +58,7 @@ class _Expenses extends State<Expenses> {
   }
 
   void _expenseOverlayModel () {
-    showModalBottomSheet(isScrollControlled: true, context: context, builder: (ctx) => ExpenseModel(onAddExpense: _addExpense));
+    showModalBottomSheet(useSafeArea: true, isScrollControlled: true, context: context, builder: (ctx) => ExpenseModel(onAddExpense: _addExpense));
     setState(() {
       selectedScreenIndex = 0;
     });
@@ -96,10 +96,13 @@ class _Expenses extends State<Expenses> {
       const NoExpense() :
       (
         selectedScreenIndex == 0 ?
-        Column(
-          children: [
-            Expanded(child: ExpenseList(expenses: _expenseList, onRemoveExpense: _removeExpense,)),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Column(
+            children: [
+              Expanded(child: ExpenseList(expenses: _expenseList, onRemoveExpense: _removeExpense,)),
+            ],
+          ),
         ) :
         Statistics(expenseList: _expenseList,)
       )
